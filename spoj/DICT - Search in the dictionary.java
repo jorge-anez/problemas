@@ -2,7 +2,7 @@ import java.util.*;
 import java.io.*;
 class Main {
 	public static final int ALPH_SIZE = 26;
-	public static ArrayList<String> L = new ArrayList<>();
+	public static BufferedWriter out = new BufferedWriter(new OutputStreamWriter(System.out), 2048);
 	static class Node{
 		public int prefixes;
 		public boolean word;
@@ -21,31 +21,32 @@ class Main {
 			return paths[i];
 		}
 	}
-	public static void solve(Node p, char V[], int i, StringBuffer buff){
+	public static void solve(Node p, char V[], char[] buff, int i)throws IOException{
 		if(i < V.length){
 			if(!p.existPath(V[i] - 'a'))
-				//System.out.println("No match.");
-			buff.append("No match.");
-			else
-				solve(p.getPath(V[i] - 'a'), V, i + 1, buff);
+				out.write("No match.\n");
+			else{
+				buff[i] = V[i];
+				solve(p.getPath(V[i] - 'a'), V, buff, i + 1);
+			}
 		}
 		else
 			for(int k = 0; k < ALPH_SIZE; k++)
-				if(p.existPath(k))
-					solve(p.getPath(k), buff.append((char)(k + 'a')));
+				if(p.existPath(k)) {
+					buff[i] = (char)(k + 'a');					
+					solve(p.getPath(k), buff, i + 1);
+				}
 	}
-	public static void solve(Node p, StringBuffer buff){		
-		if(p.word){			
-			//buff = new StringBuffer(buff);
-			//L.add(buff.toString());
-			//System.out.println(buff);
-			buff.append('\n');
+	public static void solve(Node p, char buff[], int i) throws IOException{		
+		if(p.word) {
+			buff[i] = '\n';
+			out.write(buff, 0, i + 1);
 		}
-			//System.out.println(buff);
-		
 			for(int k = 0; k < ALPH_SIZE; k++)
-				if(p.existPath(k))
-					solve(p.getPath(k), buff.append((char)(k + 'a')));
+				if(p.existPath(k)){
+					buff[i] = (char)(k + 'a');
+					solve(p.getPath(k), buff, i + 1);
+				}
 	}
 	public static void main(String []arg)throws IOException{
 		InputReader in = new InputReader(System.in);
@@ -60,13 +61,12 @@ class Main {
 			p.word = true;
 		}
 		int m = in.nextInt();
-		//solve(root, "");
 		for(int k = 1; k <= m; k++){
-			System.out.println(String.format("Case #%d:", k));
-			StringBuffer buff = new StringBuffer();
-			solve(root, in.next().toCharArray(), 0, buff);
-			System.out.println(buff);
+			out.write(String.format("Case #%d:\n", k));
+			char buff[] = new char [26];
+			solve(root, in.next().toCharArray(), buff, 0);
 		}
+		out.flush();
 	}
 	static class InputReader{
 		BufferedReader in;
