@@ -73,7 +73,6 @@ class Main {
 		return s;
 	}
 	public static boolean exist(char pattern[]){
-		boolean sw = true;
 		Node p = root;
 		int i = 0;
 		if(pattern[i] == '-'){
