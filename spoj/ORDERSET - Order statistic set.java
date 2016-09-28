@@ -5,11 +5,12 @@ class Main {
 	public static BufferedWriter out = new BufferedWriter(new OutputStreamWriter(System.out), 2048);
 	public static Node root = new Node(true);
 	static class Node{
-		public int prefixes;
+		public int prefixes, axis;
 		public boolean word;
 		public Node paths[];
 		Node(){
 			prefixes = 0;
+			axis = 0;
 			word = false;
 			paths = new Node[ALPH_SIZE];
 		}
@@ -27,9 +28,33 @@ class Main {
 			return paths[i];
 		}
 	}
+	public static Node insert(Node p, char str[], int i){
+		
+	}
+	public static boolean exist(char pattern[]){
+		Node p = root;
+		if(pattern[0] == '-'){
+			p = p.getPath(0);
+			for(int i = pattern.length - 1; i > 0; i--){
+				if(!p.existPath(pattern[i] - '0'))
+					return false;
+				p = p.getPath(pattern[i] - '0');
+			}
+		}
+		else{
+			p = p.getPath(1);
+			for(int i = 1 ; i < pattern.length; i++){
+				if(!p.existPath(pattern[i] - '0'))
+					return false;
+				p = p.getPath(pattern[i] - '0');
+			}
+		}
+		return p.word;
+	}
 	public static void print(Node p, char buff[], int i) throws IOException{		
 		if(p.word) {			
 			out.write(buff, 0, i);
+			//out.write(String.format("prefixes %d", p.prefixes));
 			out.newLine();
 		}
 		if(p.paths.length == 2){
@@ -44,81 +69,65 @@ class Main {
 		}else
 			for(int k = 0; k < ALPH_SIZE; k++)
 				if(p.existPath(k)){
-					if(buff[0] == '-')
-						buff[i] = (char)('9' - k);
-					else
-						buff[i] = (char)(k + '0');
+					buff[i] = (char)(k + '0');
 					print(p.getPath(k), buff, i + 1);
 				}
 	}
-	public static long count1(char pattern[]) throws IOException{
+	public static long count2(char pattern[]) throws IOException{
 		Node p = root;
-		int i = 0;
 		long s = 0;
-		if(pattern[i] == '-'){
-			p = p.getPath(0);
-			i++;
-		}else{
-			s +=p.getPath(0).prefixes;
-			p = p.getPath(1);
-		}
-		for( ; i < pattern.length; i++){
+		s +=p.getPath(0).prefixes;
+		p = p.getPath(1);
+		for(int i = 1 ; i < pattern.length; i++){
 			for(int j = 0; j < pattern[i] - '0'; j++ ){
-				if(p.paths[j] != null)
-					s += p.paths[j].prefixes;
+				if(p.existPath(j))
+					s += p.getPath(j).prefixes;
 			}
 			if(p.existPath(pattern[i] - '0'))
 				p = p.getPath(pattern[i] - '0');
 		}
+		//out.write(String.format("--%d%n",s));
 		return s;
 	}
-	public static boolean exist(char pattern[]){
-		Node p = root;
-		int i = 0;
-		if(pattern[i] == '-'){
-			p = p.getPath(0);
-			i++;
-		}else
-			p = p.getPath(1);
-		for( ; i < pattern.length; i++){
-			if(!p.existPath(pattern[i] - '0'))
-				return false;
-			p = p.getPath(pattern[i] - '0');
-		}
-		return p.word;
-	}
+	
 	public static void main(String []arg)throws IOException{
 		InputReader in = new InputReader(System.in);
 		int T = in.nextInt();
 		for(int k = 0; k < T; k++){
 			Node p = root;
-			int i = 0;
-			char str[] = in.next().toCharArray();
+			char str[] = String.format("%+d", Integer.parseInt(in.next())).toCharArray();
+			/*
+			out.write(new String(str));
+			out.newLine();
+			if(true)
+			continue;
+			*/
 			if(exist(str))
 				continue;
-			if(str[i] == '-'){
+			if(str[0] == '-'){
 				p = p.getPath(0);
-				p.prefixes++;
-				i++;
-				for( ; i < str.length; i++){
-					p = p.getPath('9' - str[i]);
+				p.prefixes++;				
+				for(int i = str.length - 1; i > 0; i--){
+					p = p.getPath(str[i] - '0');
 					p.prefixes++;
 				}
 			}else{
 				p = p.getPath(1);
 				p.prefixes++;
-				for( ; i < str.length; i++){
-					p = p.getPath(str[i] - '0');
+				for(int i = 1; i < str.length; i++){
+					p = p.getPath(str[i] - '0');					
 					p.prefixes++;
 				}
 			}
 			p.word = true;
 		}
-		char buff[] = new char[10];
+		
+		char buff[] = new char[11];
 		print(root, buff, 0);
-		String pattern = "-002";
-		out.write(String.valueOf(count1(pattern.toCharArray())));
+		String pattern = "+987";
+		out.write(String.valueOf(count2(pattern.toCharArray())));		
 		out.flush();
+		
 	}
 	static class InputReader{
 		BufferedReader in;
